@@ -259,17 +259,17 @@ export default function ChartComponent({
   }, [duration, symbol, onPriceUpdate]);
 
   return (
-    <div className="text-[#e2e8f0] h-full w-full relative">
+    <div className="text-[#f3f4f6] h-full w-full relative">
       {tooltipVisible && tooltip && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 px-4 py-2 bg-[#0a1929]/90 backdrop-blur-sm border border-[#1e3a5f] rounded-lg text-sm shadow-lg transition-opacity">
           {tooltip}
         </div>
       )}
-      <div className="bg-[#0a1929] backdrop-blur-xl border border-[#1e3a5f] rounded-xl overflow-hidden h-full w-full flex flex-col shadow-[0_0_30px_rgba(14,165,233,0.05)]">
-        <div className="flex items-center justify-between p-4 border-b border-[#1e3a5f]/40">
+      <div className="bg-[#0f0f10] backdrop-blur-xl border border-[#2b2b2c] rounded-xl overflow-hidden h-full w-full flex flex-col">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-b border-[#2b2b2c]">
           <div>
-            <h2 className="text-lg font-semibold text-[#e2e8f0]">{symbol}</h2>
-            <div className="text-sm text-[#94a3b8]">
+            <h2 className="text-lg font-semibold text-[#f3f4f6]">{symbol}</h2>
+            <div className="text-sm text-[#9ca3af]">
               {duration === Duration.candles_1m && "1 Minute Chart"}
               {duration === Duration.candles_1d && "Daily Chart"}
               {duration === Duration.candles_1w && "Weekly Chart"}
@@ -286,8 +286,8 @@ export default function ChartComponent({
               }}
               className={`px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                 followMode
-                  ? "bg-[#0EA5E9]/20 text-[#0EA5E9] border border-[#0EA5E9]/30"
-                  : "bg-[#0d2137] text-[#94a3b8] border border-[#1e3a5f]"
+                  ? "bg-white/10 text-white border border-white/30"
+                  : "bg-[#171717] text-[#9ca3af] border border-[#2f2f2f]"
               }`}
             >
               <div className="flex items-center gap-1.5">
@@ -310,9 +310,9 @@ export default function ChartComponent({
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <div className="flex items-center border border-[#1e3a5f] rounded-lg bg-[#0d2137]">
+            <div className="flex items-center border border-[#2f2f2f] rounded-lg bg-[#171717]">
               <button
-                className="p-2 rounded-l-lg hover:bg-[#1e3a5f]/50 transition-colors text-[#94a3b8] hover:text-[#e2e8f0]"
+                className="p-2 rounded-l-lg hover:bg-white/10 transition-colors text-[#9ca3af] hover:text-[#f3f4f6]"
                 onClick={() => {
                   if (chartRef.current) {
                     const logicalRange = chartRef.current.timeScale().getVisibleLogicalRange();
@@ -333,9 +333,9 @@ export default function ChartComponent({
                   <line x1="8" y1="11" x2="14" y2="11"></line>
                 </svg>
               </button>
-              <div className="w-[1px] h-8 bg-[#1e3a5f]"></div>
+              <div className="w-[1px] h-8 bg-[#2f2f2f]"></div>
               <button
-                className="p-2 hover:bg-[#1e3a5f]/50 transition-colors text-[#94a3b8] hover:text-[#e2e8f0]"
+                className="p-2 hover:bg-white/10 transition-colors text-[#9ca3af] hover:text-[#f3f4f6]"
                 onClick={() => {
                   if (chartRef.current) {
                     const logicalRange = chartRef.current.timeScale().getVisibleLogicalRange();
@@ -356,9 +356,9 @@ export default function ChartComponent({
                   <line x1="8" y1="11" x2="14" y2="11"></line>
                 </svg>
               </button>
-              <div className="w-[1px] h-8 bg-[#1e3a5f]"></div>
+              <div className="w-[1px] h-8 bg-[#2f2f2f]"></div>
               <button
-                className="p-2 rounded-r-lg hover:bg-[#1e3a5f]/50 transition-colors text-[#94a3b8] hover:text-[#e2e8f0]"
+                className="p-2 rounded-r-lg hover:bg-white/10 transition-colors text-[#9ca3af] hover:text-[#f3f4f6]"
                 onClick={() => {
                   if (chartRef.current) {
                     chartRef.current.timeScale().fitContent();

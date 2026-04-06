@@ -134,6 +134,10 @@ export default function Trading() {
           case "PRICE_UPDATE":
             break;
 
+          case "UNAUTHENTICATED":
+            toast.error("Live updates disconnected. Please sign in again.");
+            break;
+
           default:
             console.log("Unknown WebSocket message:", message);
         }
@@ -152,16 +156,15 @@ export default function Trading() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-[#050f1a] overflow-hidden flex flex-col">
-      <div className="fixed inset-0 bg-[#050f1a]">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-[#0EA5E9]/8 via-[#0284c7]/4 to-transparent blur-3xl"></div>
-        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-bl from-[#0EA5E9]/6 via-[#0369a1]/3 to-transparent blur-3xl"></div>
-        <div className="absolute bottom-1/4 left-1/3 w-72 h-72 bg-gradient-to-tr from-[#1e3a5f]/10 via-[#0EA5E9]/4 to-transparent blur-3xl"></div>
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(14,165,233,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(14,165,233,0.03)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
+    <div className="min-h-screen bg-[#090909] overflow-hidden flex flex-col">
+      <div className="fixed inset-0 bg-[#090909]">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-gradient-to-br from-white/5 via-white/0 to-transparent blur-3xl"></div>
+        <div className="absolute top-1/3 right-1/4 w-80 h-80 bg-gradient-to-bl from-white/5 via-transparent to-transparent blur-3xl"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
       </div>
 
       <div className="relative z-10 w-full h-full flex flex-col p-4">
-        <div className="bg-[#0a1929]/80 backdrop-blur-xl border border-[#1e3a5f] p-4 rounded-xl mb-4 flex gap-4 overflow-x-auto shadow-[0_0_20px_rgba(14,165,233,0.05)]">
+        <div className="bg-[#101010]/90 backdrop-blur-xl border border-[#2a2a2a] p-3 rounded-xl mb-4 flex flex-wrap gap-3 overflow-x-auto">
           {([
             { channel: Channels.BTCUSDT, label: "BTC/USDT", change: "+2.4%", up: true },
             { channel: Channels.ETHUSDT, label: "ETH/USDT", change: "+1.9%", up: true },
@@ -171,8 +174,8 @@ export default function Trading() {
               key={channel}
               className={`px-4 py-2 rounded-lg transition-all ${
                 symbol === channel
-                  ? "bg-[#0EA5E9]/10 text-[#0EA5E9] border border-[#0EA5E9]/30"
-                  : "text-[#e2e8f0] hover:bg-[#0d2137]/50 border border-[#1e3a5f]/50"
+                  ? "bg-white/10 text-white border border-white/30"
+                  : "text-[#d4d4d4] hover:bg-white/5 border border-[#2c2c2c]"
               }`}
               disabled={symbol === channel}
               onClick={() => setSymbol(channel)}
@@ -187,21 +190,21 @@ export default function Trading() {
           ))}
 
           <div className="flex items-center gap-2 ml-auto">
-            <div className="flex items-center bg-[#0EA5E9]/10 border border-[#0EA5E9]/30 px-4 py-2 rounded-lg mr-2">
+            <div className="flex items-center bg-[#171717] border border-[#333] px-3 py-2 rounded-lg mr-1">
               <div className="flex items-center gap-2">
                 <div className="flex items-center justify-center bg-[#0EA5E9]/20 w-7 h-7 rounded-lg">
                   <div className="w-2.5 h-2.5 bg-[#0EA5E9] rounded-full"></div>
                 </div>
                 <div>
-                  <div className="text-[9px] text-[#0EA5E9]/70 font-medium uppercase tracking-wider">Platform Profit</div>
-                  <div className="text-sm font-bold text-[#0EA5E9]">
+                  <div className="text-[9px] text-[#9ca3af] font-medium uppercase tracking-wider">Platform Profit</div>
+                  <div className="text-sm font-bold text-white">
                     {platformProfit ? `$${(platformProfit.totalProfit / 100).toFixed(2)}` : "$0.00"}
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-[#0d2137]/60 backdrop-blur-sm rounded-lg p-1 flex border border-[#1e3a5f]">
+            <div className="bg-[#151515] rounded-lg p-1 flex border border-[#2f2f2f]">
               {([
                 { d: Duration.candles_1m, label: "1m" },
                 { d: Duration.candles_1d, label: "1d" },
@@ -211,8 +214,8 @@ export default function Trading() {
                   key={d}
                   className={`px-3 py-2 rounded-md text-sm font-medium transition ${
                     duration === d
-                      ? "bg-[#0EA5E9]/20 text-[#0EA5E9]"
-                      : "text-[#94a3b8] hover:text-[#e2e8f0]"
+                      ? "bg-white/15 text-white"
+                      : "text-[#9ca3af] hover:text-white"
                   }`}
                   disabled={duration === d}
                   onClick={() => setDuration(d)}
@@ -235,28 +238,28 @@ export default function Trading() {
           </div>
         </div>
 
-        <div className="flex-grow grid grid-cols-12 gap-4 h-[calc(100vh-120px)]">
-          <div className="col-span-12 md:col-span-2 order-2 md:order-1 overflow-auto h-full">
-            <div className="bg-[#0a1929]/80 backdrop-blur-xl rounded-xl border border-[#1e3a5f] p-4 h-full shadow-[0_0_20px_rgba(14,165,233,0.05)]">
-              <h3 className="text-[#e2e8f0] text-sm font-medium mb-4 flex justify-between items-center">
+        <div className="flex-grow grid grid-cols-12 gap-3 min-h-0 h-[calc(100vh-120px)]">
+          <div className="col-span-12 md:col-span-2 order-2 md:order-1 overflow-auto min-h-0 h-full">
+            <div className="bg-[#101010]/90 backdrop-blur-xl rounded-xl border border-[#2a2a2a] p-3 h-full">
+              <h3 className="text-white text-sm font-medium mb-3 flex justify-between items-center">
                 <span>Market Data</span>
-                <span className="text-xs bg-green-500/10 text-green-400 px-2 py-1 rounded-md">Live</span>
+                <span className="text-xs bg-white/10 text-[#d1d5db] px-2 py-1 rounded-md">Live</span>
               </h3>
               <AskBids symbol={symbol} />
             </div>
           </div>
 
-          <div className="col-span-12 md:col-span-10 order-1 md:order-2 flex overflow-hidden h-[calc(100vh-130px)]">
-            <div className="w-full h-full md:w-3/4 flex flex-col gap-4 pr-4">
-              <div className="h-[65%] flex flex-col">
+          <div className="col-span-12 md:col-span-10 order-1 md:order-2 flex flex-col md:flex-row overflow-hidden min-h-0 h-[calc(100vh-130px)]">
+            <div className="w-full h-[58vh] md:h-full md:w-3/4 flex flex-col gap-3 md:pr-3 min-h-0">
+              <div className="h-[64%] flex flex-col min-h-[280px]">
                 <ChartComponent symbol={symbol} duration={duration} onPriceUpdate={setPrices} />
               </div>
-              <div className="h-[35%]">
+              <div className="h-[36%] min-h-[220px]">
                 <OrdersPanel onRefreshReady={(fn) => { refreshOrdersRef.current = fn; }} />
               </div>
             </div>
 
-            <div className="w-full h-full md:w-1/4">
+            <div className="w-full md:w-1/4 min-h-[360px] md:h-full">
               <BuySell
                 symbol={symbol}
                 askPrice={toDisplayPrice(prices.askPrice)}

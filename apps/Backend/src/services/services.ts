@@ -49,10 +49,10 @@ export async function getCandelFromDb(
     throw new Error(`Invalid symbol. Supported: BTC, ETH, SOL for Now`);
   }
 
-  const rangeDuration = (endTime - startTime) / 1000 / 60; //Convert Milliseconds to Seconds (÷ 1000) and Convert Seconds to Minutes (÷ 60)
+  const rangeDuration = (endTime - startTime) / 60; // startTime/endTime are in seconds
   const expectedCandles = rangeDuration / IntervalConfig[interval].minutes;
   if (expectedCandles > 1000) {
-    startTime = endTime - 1000 * IntervalConfig[interval].minutes * 60 * 1000;
+    startTime = endTime - 1000 * IntervalConfig[interval].minutes * 60;
     console.log(
       `Too many candles requested (${expectedCandles}). Limiting to 1000 most recent candles.`
     );
@@ -63,22 +63,45 @@ export async function getCandelFromDb(
 
   console.log(`[CANDLES] Querying ${dbSymbol} ${interval} from ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
-  const results = await prisma.$queryRawUnsafe(`
-    SELECT
-      time_bucket(INTERVAL '${pgInterval}', timestamp) AS time,
-      (array_agg(price ORDER BY timestamp))[1] AS open,
-      MAX(price) AS high,
-      MIN(price) AS low,
-      (array_agg(price ORDER BY timestamp DESC))[1] AS close,
-      SUM(CAST(quantity AS DECIMAL)) AS volume
-    FROM "Trade"
-    WHERE symbol = $1
-      AND timestamp >= $2
-      AND timestamp <= $3
-    GROUP BY time_bucket(INTERVAL '${pgInterval}', timestamp)
-    ORDER BY time ASC
-    LIMIT 1000
-  `, dbSymbol, startDate, endDate);
+  let results: unknown;
+  try {
+    results = await prisma.$queryRawUnsafe(`
+      SELECT
+        time_bucket(INTERVAL '${pgInterval}', timestamp) AS time,
+        (array_agg(price ORDER BY timestamp))[1] AS open,
+        MAX(price) AS high,
+        MIN(price) AS low,
+        (array_agg(price ORDER BY timestamp DESC))[1] AS close,
+        SUM(CAST(quantity AS DECIMAL)) AS volume
+      FROM "Trade"
+      WHERE symbol = $1
+        AND timestamp >= $2
+        AND timestamp <= $3
+      GROUP BY time_bucket(INTERVAL '${pgInterval}', timestamp)
+      ORDER BY time ASC
+      LIMIT 1000
+    `, dbSymbol, startDate, endDate);
+  } catch (error) {
+    // Fallback for plain PostgreSQL (e.g., Neon) where time_bucket extension is unavailable.
+    results = await prisma.$queryRawUnsafe(`
+      SELECT
+        date_bin(INTERVAL '${pgInterval}', timestamp, TIMESTAMP '2001-01-01') AS time,
+        (array_agg(price ORDER BY timestamp))[1] AS open,
+        MAX(price) AS high,
+        MIN(price) AS low,
+        (array_agg(price ORDER BY timestamp DESC))[1] AS close,
+        SUM(CAST(quantity AS DECIMAL)) AS volume
+      FROM "Trade"
+      WHERE symbol = $1
+        AND timestamp >= $2
+        AND timestamp <= $3
+      GROUP BY date_bin(INTERVAL '${pgInterval}', timestamp, TIMESTAMP '2001-01-01')
+      ORDER BY time ASC
+      LIMIT 1000
+    `, dbSymbol, startDate, endDate);
+
+    console.warn("[CANDLES] Using date_bin fallback query:", error instanceof Error ? error.message : error);
+  }
     if (!results || (results as any[]).length === 0) {
     console.warn(`[CANDLES] No candles found for ${dbSymbol} from ${startDate.toISOString()} to ${endDate.toISOString()}`);
     console.warn(`[CANDLES] This usually means:`);
