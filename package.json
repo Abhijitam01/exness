@@ -17,7 +17,7 @@
     "@types/ws": "^8.18.1",
     "bun-types": "latest",
     "prettier": "^3.6.2",
-    "prisma": "6.17.1",
+    "prisma": "^7.6.0",
     "turbo": "^2.5.8",
     "typescript": "5.9.2"
   },
@@ -30,7 +30,8 @@
     "packages/*"
   ],
   "dependencies": {
-    "@prisma/client": "6.17.1",
+    "@prisma/client": "^7.6.0",
+    "@prisma/client-runtime-utils": "^7.6.0",
     "axios": "^1.13.2",
     "jsonwebtoken": "^9.0.2",
     "redis": "^5.9.0",

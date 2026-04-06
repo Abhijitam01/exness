@@ -1,5 +1,5 @@
 import express from "express";
-import type { Express, Request, Response } from "express";
+import type { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { userRouter } from "./routes/user";
 import { tradeRoutes } from "./routes/trades";
@@ -16,7 +16,12 @@ import { logOAuthStatus } from "./config/oauth";
 const app: Express = express();
 const port = Number(process.env.PORT) || 5000;
 
-const allowedOrigins = Bun.env.CORS_ORIGINS?.split(",") || [
+const allowedOrigins = (process.env.CORS_ORIGINS ?? "")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const defaultOrigins = [
   "http://localhost:3000",
   "http://localhost:5173",
   "http://localhost:5174",
@@ -27,20 +32,25 @@ const allowedOrigins = Bun.env.CORS_ORIGINS?.split(",") || [
   "http://localhost:5179",
 ];
 
+const effectiveOrigins = allowedOrigins.length > 0 ? allowedOrigins : defaultOrigins;
+
 app.use(
   cors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
 
-      if (allowedOrigins.includes(origin)) {
+      if (effectiveOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error(`Origin ${origin} not allowed by CORS`));
       }
     },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
+app.options("*", cors());
 
 app.use(express.json());
 import { globalRateLimit } from "./middleware/rateLimit";
@@ -53,6 +63,13 @@ app.use("/api/v2/auth", oauthRouter);
 
 app.use((req: Request, res: Response) => {
   res.status(404).json({ error: "Route Not Found !! Undefined Route" });
+});
+
+app.use((error: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (error.message.includes("not allowed by CORS")) {
+    return res.status(403).json({ error: error.message });
+  }
+  return res.status(500).json({ error: "Internal server error" });
 });
 
 async function main() {
