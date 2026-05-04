@@ -1,9 +1,16 @@
 import { Router } from "express";
 import type { Request, Response } from "express";
+import { randomBytes } from "crypto";
 import { oauthConfig, validateOAuthConfig } from "../config/oauth";
 import { findOrCreateOAuthUser } from "../services/oauthService";
 import { generateToken } from "../utils/jwt";
 import { oauthRateLimit } from "../middleware/rateLimit";
+
+function parseCookie(cookieHeader: string | undefined, name: string): string | undefined {
+  if (!cookieHeader) return undefined;
+  const match = cookieHeader.split(";").find((c) => c.trim().startsWith(`${name}=`));
+  return match?.split("=")[1]?.trim();
+}
 
 const oauthRouter = Router();
 
@@ -48,6 +55,9 @@ oauthRouter.get("/google", oauthRateLimit, (req: Request, res: Response) => {
     return;
   }
 
+  const state = randomBytes(16).toString("hex");
+  res.cookie("oauthState", state, { httpOnly: true, sameSite: "lax", maxAge: 600000 });
+
   const googleAuthURL = new URL("https://accounts.google.com/o/oauth2/v2/auth");
 
   googleAuthURL.searchParams.set("client_id", oauthConfig.google.clientID);
@@ -59,6 +69,7 @@ oauthRouter.get("/google", oauthRateLimit, (req: Request, res: Response) => {
   googleAuthURL.searchParams.set("scope", "email profile");
   googleAuthURL.searchParams.set("access_type", "offline");
   googleAuthURL.searchParams.set("prompt", "consent");
+  googleAuthURL.searchParams.set("state", state);
 
   console.log("[OAuth] Redirecting to Google...");
   res.redirect(googleAuthURL.toString());
@@ -68,6 +79,16 @@ oauthRouter.get(
   "/google/callback",
   async (req: Request, res: Response): Promise<void> => {
     try {
+      const returnedState = req.query.state as string;
+      const cookieState = parseCookie(req.headers.cookie, "oauthState");
+
+      if (!returnedState || !cookieState || returnedState !== cookieState) {
+        console.error("[Google OAuth] CSRF state mismatch");
+        res.redirect(`${oauthConfig.frontendURL}/signin?error=invalid_state`);
+        return;
+      }
+      res.clearCookie("oauthState");
+
       const code = req.query.code as string;
 
       if (!code) {
@@ -150,6 +171,9 @@ oauthRouter.get("/github", oauthRateLimit, (req: Request, res: Response) => {
     return;
   }
 
+  const state = randomBytes(16).toString("hex");
+  res.cookie("oauthState", state, { httpOnly: true, sameSite: "lax", maxAge: 600000 });
+
   const githubAuthURL = new URL("https://github.com/login/oauth/authorize");
 
   githubAuthURL.searchParams.set("client_id", oauthConfig.github.clientID);
@@ -158,6 +182,7 @@ oauthRouter.get("/github", oauthRateLimit, (req: Request, res: Response) => {
     oauthConfig.github.callbackURL
   );
   githubAuthURL.searchParams.set("scope", "user:email");
+  githubAuthURL.searchParams.set("state", state);
 
   console.log("[OAuth] Redirecting to GitHub...");
   res.redirect(githubAuthURL.toString());
@@ -168,6 +193,16 @@ oauthRouter.get(
   "/github/callback",
   async (req: Request, res: Response): Promise<void> => {
     try {
+      const returnedState = req.query.state as string;
+      const cookieState = parseCookie(req.headers.cookie, "oauthState");
+
+      if (!returnedState || !cookieState || returnedState !== cookieState) {
+        console.error("[GitHub OAuth] CSRF state mismatch");
+        res.redirect(`${oauthConfig.frontendURL}/signin?error=invalid_state`);
+        return;
+      }
+      res.clearCookie("oauthState");
+
       const code = req.query.code as string;
 
       if (!code) {
