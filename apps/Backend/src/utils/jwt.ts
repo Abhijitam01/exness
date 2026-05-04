@@ -14,7 +14,6 @@ export function generateToken(userId: string): string {
     expiresIn: expiresIn as any,
   });
 
-  console.log(`[JWT GENERATED] User: ${userId} | Expires: ${expiresIn}`);
   return accessToken;
 }
 
@@ -26,7 +25,6 @@ export function verifyToken(token: string): JWTPayload | null {
     }
 
     const decoded = jwt.verify(token, secret) as JWTPayload;
-    console.log(`[JWT VERIFIED] User: ${decoded.userId} | Token Valid`);
     return decoded;
   } catch (err) {
     console.error("Invalid Token!", err);
