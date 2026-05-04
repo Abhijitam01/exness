@@ -73,7 +73,6 @@ export class Signalingmanager {
 
       if (this.token) {
         this.ws.send(JSON.stringify({ type: "AUTH", token: this.token }));
-        console.log("WebSocket authentication sent");
       }
 
       Object.keys(this.subCount).forEach((sym) => {
@@ -86,8 +85,6 @@ export class Signalingmanager {
         this.ws.send(JSON.stringify(msg));
       });
       this.bufferedMessage = [];
-
-      console.log("WebSocket connected");
     };
 
     this.ws.onmessage = (msg) => {
@@ -96,7 +93,6 @@ export class Signalingmanager {
 
       if (parsedMsg.type === "AUTHENTICATED") {
         this.authenticated = true;
-        console.log(`WebSocket authenticated as user ${parsedMsg.userId}`);
       } else if (parsedMsg.type === "UNAUTHENTICATED") {
         this.authenticated = false;
         console.error("WebSocket authentication failed:", parsedMsg.message);
@@ -130,7 +126,6 @@ export class Signalingmanager {
     };
 
     this.ws.onclose = () => {
-      console.log(" WebSocket disconnected, reconnecting...");
       this.initialized = false;
       setTimeout(() => {
         this.ws = new WebSocket(url);
