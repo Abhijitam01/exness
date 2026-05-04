@@ -14,9 +14,9 @@ export async function initOrderBroadcast() {
     if (!client.isOpen) {
       await client.connect();
     }
-    console.log("Redis Connected Sucessfully !!!!!!!!!");
+    console.log("Redis connected");
   } catch (err) {
-    console.error("Error in Connecting Redish , Trying again in 3 second", err);
+    console.error("Redis connection failed, retrying in 3s", err);
     setTimeout(() => {
       initOrderBroadcast();
     }, 3000);
@@ -39,7 +39,7 @@ export async function broadcastOrderOpened(order: Order) {
     };
     const redishOrder = `orders:${order.userId}`;
     await client.publish(redishOrder, JSON.stringify(OrderObj));
-    console.log("Sucessfully publish order From Redish to websocket");
+    console.log("Order published to Redis");
   } catch (err) {
     console.error("Error publishing trade:", err);
   }
@@ -72,9 +72,9 @@ export async function broadcastOrderClose(
     };
     const redishOrder = `orders:${ClosedOrder.userId}`;
     await client.publish(redishOrder, JSON.stringify(OrderObj));
-    console.log(`Order closed with ${ClosedOrder.pnl}`);
+    console.log(`Order closed broadcast sent, pnl: ${ClosedOrder.pnl}`);
   } catch (err) {
-    console.error("Soem Error In sending the message to resh to websocket");
+    console.error("Error publishing order close to Redis:", err);
   }
 }
 
