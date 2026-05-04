@@ -12,9 +12,13 @@ export async function getCandelFromDb(
   endTime: number
 ): Promise<Candle[]> {
   const IntervalConfig = {
-    "1m": { minutes: 1, pgInterval: "1 minute" },
-    "1d": { minutes: 1440, pgInterval: "1 day" },
-    "1w": { minutes: 10080, pgInterval: "1 week" },
+    "1m":  { minutes: 1,     pgInterval: "1 minute" },
+    "5m":  { minutes: 5,     pgInterval: "5 minutes" },
+    "15m": { minutes: 15,    pgInterval: "15 minutes" },
+    "1h":  { minutes: 60,    pgInterval: "1 hour" },
+    "4h":  { minutes: 240,   pgInterval: "4 hours" },
+    "1d":  { minutes: 1440,  pgInterval: "1 day" },
+    "1w":  { minutes: 10080, pgInterval: "1 week" },
   } as const;
 
   if (!symbol || symbol.trim() === "") {
@@ -24,12 +28,10 @@ export async function getCandelFromDb(
   const now = Math.floor(Date.now() / 1000);
 
   if (startTime > now) {
-    console.log(`[CANDLES] Future data requested for ${symbol} (start: ${startTime}, now: ${now}), returning empty`);
     return [];
   }
 
   if (endTime > now) {
-    console.log(`[CANDLES] endTime ${endTime} is in future, clamping to now ${now}`);
     endTime = now;
   }
 
@@ -53,15 +55,10 @@ export async function getCandelFromDb(
   const expectedCandles = rangeDuration / IntervalConfig[interval].minutes;
   if (expectedCandles > 1000) {
     startTime = endTime - 1000 * IntervalConfig[interval].minutes * 60;
-    console.log(
-      `Too many candles requested (${expectedCandles}). Limiting to 1000 most recent candles.`
-    );
   }
   const startDate = new Date(startTime * 1000);
   const endDate = new Date(endTime * 1000);
   const pgInterval = IntervalConfig[interval].pgInterval;
-
-  console.log(`[CANDLES] Querying ${dbSymbol} ${interval} from ${startDate.toISOString()} to ${endDate.toISOString()}`);
 
   let results: unknown;
   try {
@@ -119,8 +116,6 @@ export async function getCandelFromDb(
     close: fromInternalPrice(Number(row.close)),
     volume: row.volume ? row.volume.toString() : "0",
   }));
-
-  console.log(`[CANDLES] Returning ${candles.length} candles for ${dbSymbol} ${interval}`);
 
   return candles;
 }

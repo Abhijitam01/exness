@@ -40,7 +40,7 @@ export const PriceDataSchema = z.object({
   time: z.number(),
 });
 
-export type TimeDurationCandel = "1m" | "1d" | "1w";
+export type TimeDurationCandel = "1m" | "5m" | "15m" | "1h" | "4h" | "1d" | "1w";
 export type OrderType = "buy" | "sell";
 export type OrderStatus = "OPEN" | "CLOSED" | "LIQUIDATED";
 export type reasonForClose =
