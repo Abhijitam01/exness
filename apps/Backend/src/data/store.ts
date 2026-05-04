@@ -30,7 +30,6 @@ export function CreateUser(userId: string, email: string, password: string, bala
 export function findUser(email: string): User | undefined {
   const USer = emailToUserId.get(email); //
   if (!USer) {
-    console.log("No User Found !!!!!!!!");
     return undefined;
   } else {
     const user = StoreData.get(USer);
@@ -41,7 +40,6 @@ export function findUser(email: string): User | undefined {
 export function findUSerId(ID: string): User | undefined {
   const checkUser = StoreData.get(ID);
   if (!checkUser) {
-    console.log(`The User with ${ID} does not exist`);
     return undefined;
   } else {
     return checkUser;
@@ -52,11 +50,6 @@ export function UserBalance(userId: string, UserBalance: number): void {
   const ValidUSer = StoreData.get(userId);
   if (ValidUSer) {
     ValidUSer.balance.usd_balance = UserBalance;
-    console.log(
-      `The User with ${userId} HAs sucesfully  Updated his Balance to ${UserBalance}`
-    );
-  } else {
-    console.log(`The User with ${userId} does not exist`);
   }
 }
 
