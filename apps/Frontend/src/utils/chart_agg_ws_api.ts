@@ -12,15 +12,14 @@ export interface RealtimeUpdate {
 
 function getbucketsize(duration: Duration): number {
   switch (duration) {
-    case "1m":
-      return 60;
-    case "1d":
-      return 86400;
-    case "1w":
-      return 604800;
-    default:
-      console.warn("invalid duration", duration);
-      return 0;
+    case "1m":  return 60;
+    case "5m":  return 300;
+    case "15m": return 900;
+    case "1h":  return 3600;
+    case "4h":  return 14400;
+    case "1d":  return 86400;
+    case "1w":  return 604800;
+    default:    return 0;
   }
 }
 
@@ -78,7 +77,6 @@ export function initLastCandle(
 
 export async function getChartData(symbol: SYMBOL, duration: Duration) {
   const response = await getKlineData(symbol, duration);
-  console.log("response", response);
   initLastCandle(symbol, duration, response.candles);
   return response.candles;
 }
