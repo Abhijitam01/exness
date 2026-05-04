@@ -115,10 +115,10 @@ export default function ChartComponent({
         });
 
         candlestickSeries = chart.addSeries(CandlestickSeries, {
-          upColor: "#158BF9",
+          upColor: "#0EA5E9",
           downColor: "#EB483F",
           borderVisible: false,
-          wickUpColor: "#158BF9",
+          wickUpColor: "#0EA5E9",
           wickDownColor: "#EB483F",
         });
 
