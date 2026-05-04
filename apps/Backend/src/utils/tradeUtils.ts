@@ -3,6 +3,7 @@ import { reasonForClose, ClosedOrder, FEE_PERCENTAGE } from "../types";
 import { calculatePnLCents } from "./PnL";
 import { broadcastOrderClose } from "../services/orderBroadcast";
 import { prisma } from "@nextrade/database";
+import { onOrderClosed } from "../services/platformProfit";
 
 
 export  async function closeOrder(userId: string,orderId: string,closePrice: number,closeReason: reasonForClose): Promise<number> {
@@ -102,7 +103,6 @@ export  async function closeOrder(userId: string,orderId: string,closePrice: num
   }
 
   try {
-    const { onOrderClosed } = require("../services/platformProfit");
     onOrderClosed(order);
   } catch (err) {
     console.error("Failed to update platform profit, but order closed successfully:", err);
