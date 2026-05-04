@@ -9,13 +9,19 @@ import { PriceStorageMp } from "../data/store";
 import { calculateLiquidation } from "../utils/PnL";
 import { randomUUID } from "crypto";
 import { Order } from "../types";
-import { getUserOrders, getUserCloseOrders } from "../data/store";
+import { getUserOrders, getUserCloseOrders, UserBalance } from "../data/store";
 import { closeOrder } from "../utils/tradeUtils";
 import {
   broadcastOrderClose,
   broadcastOrderOpened,
 } from "../services/orderBroadcast";
 import { prisma } from "@nextrade/database";
+import {
+  onOrderOpened,
+  onOrderPartialClose,
+  onMarginAdded,
+  getPlatformProfit,
+} from "../services/platformProfit";
 
 export const tradeRoutes = Router();
 
@@ -202,7 +208,7 @@ tradeRoutes.post(
           return transactionNewBalance;
         });
 
-        user.balance.usd_balance = actualNewBalance;
+        UserBalance(userId, actualNewBalance);
         const userOrders = getUserOrders(userId);
         userOrders.set(orderId, orderDetails);
 
@@ -221,7 +227,6 @@ tradeRoutes.post(
       }
 
       try {
-        const { onOrderOpened } = require("../services/platformProfit");
         onOrderOpened(orderDetails);
       } catch (err) {
         console.error("Failed to update platform profit, but trade succeeded:", err);
@@ -502,7 +507,6 @@ tradeRoutes.post(
     }
 
     try {
-      const { onOrderPartialClose } = require("../services/platformProfit");
       onOrderPartialClose(marginToClose); // 0.5% of exact amount closed
     } catch (err) {
       console.error("Failed to update platform profit, but partial close succeeded:", err);
@@ -612,7 +616,6 @@ tradeRoutes.post(
     }
 
     try {
-      const { onMarginAdded } = require("../services/platformProfit");
       onMarginAdded(additionalMarginCents); // Add 0.5% of additional margin
     } catch (err) {
       console.error("Failed to update platform profit, but margin added successfully:", err);
@@ -638,7 +641,6 @@ tradeRoutes.post(
 
 tradeRoutes.get("/platform-profit", (req: Request, res: Response): void => {
   try {
-    const { getPlatformProfit } = require("../services/platformProfit");
     const platformProfit = getPlatformProfit();
 
     res.status(200).json(platformProfit);
