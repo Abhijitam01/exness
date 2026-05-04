@@ -12,7 +12,8 @@ const redis = createClient({
   url: process.env.REDIS_URL || "redis://localhost:6379",
 });
 
-const wss = new WebSocketServer({ port: 8080 });
+const WS_PORT = Number(process.env.WEBSOCKET_PORT) || 8080;
+const wss = new WebSocketServer({ port: WS_PORT });
 const SubsManager = new SubscriptionManager();
 let isShuttingDown = false;
 
@@ -24,9 +25,9 @@ export async function StartWs() {
 async function connectRedis() {
   try {
     await redis.connect();
-    console.log("Redish Connect In WebSokcet !!!!!!!!!!!");
+    console.log("Redis connected in WebSocket");
     await orderRedis.connect();
-    console.log("Order Redis connected for pattern subscriptions!");
+    console.log("Order Redis connected for pattern subscriptions");
 
     for (const asset of SUPPORTED_ASSETS) {
       await redis.subscribe(asset, (mssg) => {
@@ -39,7 +40,7 @@ async function connectRedis() {
     });
     console.log("Subscribed to pattern: orders:*");
   } catch (err) {
-    console.error("Failed to Connect with redish Truing in 3 Sec");
+    console.error("Redis connection failed, retrying in 3s");
     setTimeout(() => {
       connectRedis();
     }, 3000);
@@ -50,19 +51,19 @@ async function WS() {
   try {
     wss.on("connection", function connection(ws) {
       SubsManager.addClient(ws);
-      console.log("Client Connected");
+      console.log("Client connected");
       ws.on("message", (mmsgg) => {
         handleClientMessage(ws, mmsgg);
       });
       ws.on("close", () => {
         SubsManager.removeClient(ws);
-        console.log("Client DiSconnect Sucessfully !!!");
+        console.log("Client disconnected");
       });
       ws.on("error", (err) => {
         console.error("Error Occurred in WebSocket", err);
       });
     });
-    console.log("Websocket is listening on port 8080 Readyyyyy");
+    console.log(`WebSocket listening on port ${WS_PORT}`);
   } catch (err) {
     console.error("Error setting up WebSocket server:", err);
   }
